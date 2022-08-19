@@ -1,26 +1,24 @@
-import pyaudio
-import wave
+import tkinter as tk
+import threading
 
-audio = pyaudio.PyAudio()
+import recorder
 
-stream = audio.open(format=pyaudio.paInt16, channels=1, rate=44100, input=True, frames_per_buffer=1024)
 
-frames = []
+def main():
+    root = tk.Tk()
+    root.title("Sound Recorder")
 
-try:
-    while True:
-        data = stream.read(1024)
-        frames.append(data)
-except KeyboardInterrupt:
-    pass
+    canvas = tk.Canvas(root, width=200, height=100)
+    canvas.grid()
 
-stream.stop_stream()
-stream.close()
-audio.terminate()
+    button = tk.Button(root, command=lambda: threading.Thread(target=recorder.record_audio).start(), text="Record")
+    button.grid()
 
-sound_file = wave.open("C:\\Users\\Metin\\Desktop\\my_recording.wav", "wb")
-sound_file.setnchannels(1)
-sound_file.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-sound_file.setframerate(44100)
-sound_file.writeframes(b''.join(frames))
-sound_file.close()
+    button = tk.Button(root, command=lambda: threading.Thread(target=recorder.stop_recording()).start(), text="Stop")
+    button.grid()
+
+    root.mainloop()
+
+
+if __name__ == '__main__':
+    main()
