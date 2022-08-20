@@ -1,32 +1,22 @@
-import pyaudio
-import wave
 import datetime
 
-now = datetime.datetime.now()
+import sounddevice as sd
+from numpy import ndarray
+from scipy.io.wavfile import write
 
-audio = pyaudio.PyAudio()
-stream = audio.open(format=pyaudio.paInt16, channels=2, rate=48000, input=True, frames_per_buffer=1024)
-frames = []
+fs = 48000
+seconds = 10
+my_recording: ndarray
 
 
 def record_audio():
-    try:
-        while True:
-            data = stream.read(num_frames=1024, exception_on_overflow=False)
-            frames.append(data)
-    except IOError:
-        pass
+    global my_recording
+    my_recording = sd.rec(int(seconds * fs), samplerate=fs, channels=2)
+    sd.wait()
+
+    write("C:\\Users\\Metin\\Desktop\\" + str(datetime.datetime.now().strftime("%d-%b-%Y (%H.%M.%S)")) + ".wav", fs,
+          my_recording)
 
 
 def stop_recording():
-    if frames.__sizeof__() > 0 and stream.is_active():
-        stream.stop_stream()
-        stream.close()
-        audio.terminate()
-
-        sound_file = wave.open("C:\\Users\\Metin\\Desktop\\" + str(now.strftime("%d-%b-%Y (%H.%M.%S)")) + ".wav", "wb")
-        sound_file.setnchannels(2)
-        sound_file.setsampwidth(audio.get_sample_size(pyaudio.paInt16))
-        sound_file.setframerate(48000)
-        sound_file.writeframes(b''.join(frames))
-        sound_file.close()
+    sd.stop()
